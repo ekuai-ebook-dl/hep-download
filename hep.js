@@ -9,6 +9,9 @@ let iframe = document.getElementsByTagName("iframe")[0];
 if (iframe) {
 	location.href = iframe.src;
 }
+iframe = document.createElement("iframe");
+document.body.appendChild(iframe);
+window.console = iframe.contentWindow.console;
 let div = document.createElement("div");
 div.innerHTML = `
 	<div  style="
@@ -63,17 +66,17 @@ function getPage() {
 		error = 0;
 		img.src = canvas.toDataURL();
 		console.log("获取第", num, "页成功");
+		if (auto.checked) {
+			setTimeout(downloadPage, config.interval);
+		}
 	} else {
 		error++;
 		if (error >= config.errMax) {
 			console.error("加载第", num, "页", "重试次数超限，终止运行");
 		} else {
 			console.warn("获取第", num, "页出错，稍后重试");
-			setTimeout(getPage, config.interval * 2);
+			setTimeout(getPage, config.interval * 4);
 		}
-	}
-	if (auto.checked) {
-		setTimeout(downloadPage, config.interval);
 	}
 }
 
@@ -82,10 +85,13 @@ function downloadPage() {
 	save_link.href = img.src;
 	save_link.download = config.filenameFront + start.value + config.filenameBack + ".png";
 	save_link.click();
-	if (auto.checked && parseInt(start.value) >= parseInt(end.value)) {
+	let endPage = parseInt(end.value) ? parseInt(end.value) : 0;
+	if (auto.checked && parseInt(start.value) >= endPage) {
 		console.info("遍历完毕");
 	} else {
 		start.value = parseInt(start.value) + 1;
-		setTimeout(getPage, config.interval);
+		if (auto.checked) {
+			setTimeout(getPage, config.interval);
+		}
 	}
 }
